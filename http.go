@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io/fs"
 	"log/slog"
 	"net/http"
 
@@ -16,6 +17,11 @@ import (
 const httpPort = "17821"
 
 func runHTTP(ctx context.Context, chart *chart.Chart, values map[string]any, releaseOptions chartutil.ReleaseOptions) error {
+	uiFS, err := fs.Sub(staticFS, "ui/build")
+	if err != nil {
+		return err
+	}
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/data", httpHandlerWithError(func(w http.ResponseWriter, r *http.Request) error {
 		valuesToRender, err := chartutil.ToRenderValues(chart, values, releaseOptions, nil)
@@ -61,6 +67,8 @@ func runHTTP(ctx context.Context, chart *chart.Chart, values map[string]any, rel
 
 		return json.NewEncoder(w).Encode(data)
 	}))
+	// mux.Handle("/", http.StripPrefix("/ui/build/", http.FileServer(http.FS(uiFS))))
+	mux.Handle("/", http.FileServer(http.FS(uiFS)))
 
 	return http.ListenAndServe(":"+httpPort, mux)
 }
