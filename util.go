@@ -11,6 +11,10 @@ import (
 	"strings"
 )
 
+func ensureRelativePath(path string) string {
+	return strings.TrimLeft(path, "/")
+}
+
 func outputTemplate(renderedTemplate map[string]string) string {
 	var tmpl strings.Builder
 	for fn, fv := range mapSortedByKey(renderedTemplate) {

@@ -62,9 +62,13 @@ func run(ctx context.Context) error {
 				return fmt.Errorf("error loading chart from folder: %w", err)
 			}
 
+			var displayValueFiles []string
+
 			values := map[string]any{}
 			for _, valueFile := range command.StringSlice("value-file") {
 				currentMap := map[string]interface{}{}
+
+				displayValueFiles = append(displayValueFiles, ensureRelativePath(strings.TrimPrefix(valueFile, chartFolder)))
 
 				bytes, err := os.ReadFile(valueFile)
 				if err != nil {
@@ -97,7 +101,7 @@ func run(ctx context.Context) error {
 			slog.InfoContext(ctx, "opening browser URL", "url", browserURL)
 			// _ = openURL(browserURL)
 
-			return runHTTP(ctx, chart, values, options)
+			return runHTTP(chart, displayValueFiles, values, options)
 		},
 	}
 

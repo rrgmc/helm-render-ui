@@ -27,7 +27,6 @@ export default class HelmTemplatePreview extends React.Component<Props> {
       rawChart: defaults.rawChart,
       rawRelease: defaults.rawRelease,
       rawCapabilities: defaults.rawCapabilities,
-      renderedTemplate: "",
       renderedTemplateFiles: [],
       renderError: "",
     };
@@ -54,7 +53,6 @@ export default class HelmTemplatePreview extends React.Component<Props> {
               rawRelease: data.release,
               rawValues: data.values,
               rawRenderValues: data.renderValues,
-              renderedTemplate: data.preview,
               renderedTemplateFiles: data.previewFiles,
               renderError: "",
           })

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"io/fs"
@@ -17,7 +16,7 @@ import (
 
 const httpPort = "17821"
 
-func runHTTP(ctx context.Context, chart *chart.Chart, values map[string]any, releaseOptions chartutil.ReleaseOptions) error {
+func runHTTP(chart *chart.Chart, valueFiles []string, values map[string]any, releaseOptions chartutil.ReleaseOptions) error {
 	uiFS, err := fs.Sub(staticFS, "ui/build")
 	if err != nil {
 		return err
@@ -25,6 +24,8 @@ func runHTTP(ctx context.Context, chart *chart.Chart, values map[string]any, rel
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/data", httpHandlerWithError(func(w http.ResponseWriter, r *http.Request) error {
+		fnprefix := fmt.Sprintf("%s/templates/", chart.Name())
+
 		valuesToRender, err := chartutil.ToRenderValues(chart, values, releaseOptions, nil)
 		if err != nil {
 			return err
@@ -38,6 +39,11 @@ func runHTTP(ctx context.Context, chart *chart.Chart, values map[string]any, rel
 		chartStr, err := yaml.Marshal(chart.Metadata)
 		if err != nil {
 			return err
+		}
+
+		chartStrValue := string(chartStr) + "\n---\nvalue_files:\n"
+		for _, file := range valueFiles {
+			chartStrValue += fmt.Sprintf("- %s\n", strings.TrimPrefix(file, fnprefix))
 		}
 
 		releaseStr, err := yaml.Marshal(releaseOptions)
@@ -56,14 +62,12 @@ func runHTTP(ctx context.Context, chart *chart.Chart, values map[string]any, rel
 		}
 
 		data := apiData{
-			Chart:        string(chartStr),
+			Chart:        chartStrValue,
 			Release:      string(releaseStr),
 			Values:       string(valuesStr),
 			RenderValues: string(renderValuesStr),
-			Preview:      outputTemplate(renderedTemplate),
+			// Preview:      outputTemplate(renderedTemplate),
 		}
-
-		fnprefix := fmt.Sprintf("%s/templates/", chart.Name())
 
 		for fn, fv := range mapSortedByKey(renderedTemplate) {
 			if strings.TrimSpace(fv) == "" {
