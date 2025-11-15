@@ -67,7 +67,6 @@ func runHTTP(ctx context.Context, chart *chart.Chart, values map[string]any, rel
 
 		return json.NewEncoder(w).Encode(data)
 	}))
-	// mux.Handle("/", http.StripPrefix("/ui/build/", http.FileServer(http.FS(uiFS))))
 	mux.Handle("/", http.FileServer(http.FS(uiFS)))
 
 	return http.ListenAndServe(":"+httpPort, mux)
