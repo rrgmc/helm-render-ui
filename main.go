@@ -34,6 +34,17 @@ func run(ctx context.Context) error {
 			},
 		},
 		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:        "namespace",
+				Aliases:     []string{"n"},
+				Usage:       "namespace",
+				DefaultText: "default",
+			},
+			&cli.StringFlag{
+				Name:    "release",
+				Aliases: []string{"r"},
+				Usage:   "release name",
+			},
 			&cli.StringSliceFlag{
 				Name:    "value-file",
 				Aliases: []string{"f"},
@@ -73,12 +84,16 @@ func run(ctx context.Context) error {
 			}
 
 			options := chartutil.ReleaseOptions{
-				Name:      "opentelemetry-collector",
-				Namespace: "sibros-infra",
+				Name:      command.String("release"),
+				Namespace: command.String("namespace"),
 				Revision:  1,
 				IsInstall: true,
 				IsUpgrade: false,
 			}
+			if options.Name == "" {
+				options.Name = chart.Metadata.Name
+			}
+
 			valuesToRender, err := chartutil.ToRenderValues(chart, values, options, nil)
 			if err != nil {
 				return err
