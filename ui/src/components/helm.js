@@ -32,6 +32,10 @@ export default class HelmTemplatePreview extends React.Component<Props> {
     };
   }
 
+  componentDidMount() {
+    this.updateHelmRender();
+  }
+
   updateRawTemplate(rawTemplate) {
     this.setState(
       {
@@ -149,17 +153,6 @@ export default class HelmTemplatePreview extends React.Component<Props> {
         </div>
         <div className="container">
           <div className="input">
-            <div className="input__template">
-              <Editor
-                value={this.state.rawTemplate}
-                highlight={highlighter}
-                padding={padding}
-                style={style}
-                onValueChange={(code) => this.updateRawTemplate(code)}
-                placeholder="Enter template file contents here"
-                className="input__template__editor editor"
-              />
-            </div>
             <div className="input__values">
               <Tabs>
                 <TabList>
