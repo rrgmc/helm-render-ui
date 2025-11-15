@@ -5,8 +5,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/fs"
-	"log"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -94,7 +92,7 @@ func runHTTP(chart *chart.Chart, valueFiles []string, values map[string]any, rel
 		return json.NewEncoder(w).Encode(data)
 	}))
 	// mux.Handle("/", http.FileServer(http.FS(uiFS)))
-	mux.Handle("/", http.FileServer(zipReader))
+	mux.Handle("/", http.FileServerFS(zipReader))
 
 	return http.ListenAndServe(":"+httpPort, mux)
 }
