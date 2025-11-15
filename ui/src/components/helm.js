@@ -28,6 +28,7 @@ export default class HelmTemplatePreview extends React.Component<Props> {
       rawRelease: defaults.rawRelease,
       rawCapabilities: defaults.rawCapabilities,
       renderedTemplate: "",
+      renderedTemplateFiles: [],
       renderError: "",
     };
   }
@@ -54,6 +55,7 @@ export default class HelmTemplatePreview extends React.Component<Props> {
               rawValues: data.values,
               rawRenderValues: data.renderValues,
               renderedTemplate: data.preview,
+              renderedTemplateFiles: data.previewFiles,
               renderError: "",
           })
         );
@@ -154,13 +156,21 @@ export default class HelmTemplatePreview extends React.Component<Props> {
             </div>
           </div>
           <div className="preview">
-            <Preview
-              value={this.state.renderedTemplate}
-              highlight={highlighter}
-              padding={padding}
-              style={style}
-              className="preview__highlighted"
-            />
+            <Tabs>
+              <TabList>
+                  { this.state.renderedTemplateFiles.map(file => <Tab key={`l-${file.filename}`}>{file.filename}</Tab>) }
+              </TabList>
+                { this.state.renderedTemplateFiles.map(file => <TabPanel key={`p-${file.filename}`}>
+                    <Preview
+                        value={file.preview}
+                        highlight={highlighter}
+                        padding={padding}
+                        style={style}
+                        className="preview__highlighted"
+                    />
+                </TabPanel>) }
+            </Tabs>
+
           </div>
         </div>
         <div

@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"log/slog"
 	"net/http"
+	"strings"
 
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chartutil"
@@ -60,6 +61,18 @@ func runHTTP(ctx context.Context, chart *chart.Chart, values map[string]any, rel
 			Values:       string(valuesStr),
 			RenderValues: string(renderValuesStr),
 			Preview:      outputTemplate(renderedTemplate),
+		}
+
+		fnprefix := fmt.Sprintf("%s/templates/", chart.Name())
+
+		for fn, fv := range mapSortedByKey(renderedTemplate) {
+			if strings.TrimSpace(fv) == "" {
+				continue
+			}
+			data.PreviewFiles = append(data.PreviewFiles, apiDataFile{
+				Filename: strings.TrimPrefix(fn, fnprefix),
+				Preview:  fv,
+			})
 		}
 
 		w.Header().Set("Access-Control-Allow-Origin", "*")
