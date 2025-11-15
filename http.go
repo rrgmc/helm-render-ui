@@ -1,9 +1,12 @@
 package main
 
 import (
+	"archive/zip"
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/fs"
+	"log"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -17,10 +20,16 @@ import (
 const httpPort = "17821"
 
 func runHTTP(chart *chart.Chart, valueFiles []string, values map[string]any, releaseOptions chartutil.ReleaseOptions) error {
-	uiFS, err := fs.Sub(staticFS, "ui/build")
+	// uiFS, err := fs.Sub(staticFS, "ui/build")
+	// if err != nil {
+	// 	return err
+	// }
+
+	zipReader, err := zip.NewReader(bytes.NewReader(staticzipFS), int64(len(staticzipFS)))
 	if err != nil {
 		return err
 	}
+	// defer zipReader.Close()
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/data", httpHandlerWithError(func(w http.ResponseWriter, r *http.Request) error {
@@ -84,7 +93,8 @@ func runHTTP(chart *chart.Chart, valueFiles []string, values map[string]any, rel
 
 		return json.NewEncoder(w).Encode(data)
 	}))
-	mux.Handle("/", http.FileServer(http.FS(uiFS)))
+	// mux.Handle("/", http.FileServer(http.FS(uiFS)))
+	mux.Handle("/", http.FileServer(zipReader))
 
 	return http.ListenAndServe(":"+httpPort, mux)
 }
