@@ -10,7 +10,6 @@ import (
 	"github.com/urfave/cli/v3"
 	"helm.sh/helm/v3/pkg/chart/loader"
 	"helm.sh/helm/v3/pkg/chartutil"
-	"helm.sh/helm/v3/pkg/engine"
 	"sigs.k8s.io/yaml"
 )
 
@@ -94,19 +93,11 @@ func run(ctx context.Context) error {
 				options.Name = chart.Metadata.Name
 			}
 
-			valuesToRender, err := chartutil.ToRenderValues(chart, values, options, nil)
-			if err != nil {
-				return err
-			}
+			browserURL := "http://127.0.0.1:" + httpPort
+			slog.InfoContext(ctx, "opening browser URL", "url", browserURL)
+			_ = openURL(browserURL)
 
-			renderedTemplate, err := engine.Render(chart, valuesToRender)
-			if err != nil {
-				return fmt.Errorf("cannot render template using engine: %v", err)
-			}
-
-			fmt.Println(outputTemplate(renderedTemplate))
-
-			return nil
+			return runHTTP(ctx, chart, values, options)
 		},
 	}
 
