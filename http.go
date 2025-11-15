@@ -15,7 +15,7 @@ const httpPort = "17821"
 
 func runHTTP(ctx context.Context, chart *chart.Chart, values map[string]any, releaseOptions chartutil.ReleaseOptions) error {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", httpHandlerWithError(func(w http.ResponseWriter, r *http.Request) error {
+	mux.HandleFunc("/data", httpHandlerWithError(func(w http.ResponseWriter, r *http.Request) error {
 		valuesToRender, err := chartutil.ToRenderValues(chart, values, releaseOptions, nil)
 		if err != nil {
 			return err
@@ -25,6 +25,9 @@ func runHTTP(ctx context.Context, chart *chart.Chart, values map[string]any, rel
 		if err != nil {
 			return fmt.Errorf("cannot render template using engine: %v", err)
 		}
+
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 
 		_, err = w.Write([]byte(outputTemplate(renderedTemplate)))
 		return err

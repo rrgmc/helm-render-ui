@@ -95,7 +95,7 @@ func run(ctx context.Context) error {
 
 			browserURL := "http://127.0.0.1:" + httpPort
 			slog.InfoContext(ctx, "opening browser URL", "url", browserURL)
-			_ = openURL(browserURL)
+			// _ = openURL(browserURL)
 
 			return runHTTP(ctx, chart, values, options)
 		},

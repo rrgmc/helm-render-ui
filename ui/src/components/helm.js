@@ -110,16 +110,8 @@ export default class HelmTemplatePreview extends React.Component<Props> {
         .then((errorMessage) => this.setState({ renderError: errorMessage }));
     };
 
-    fetch(`${this.props.apiURL}/template`, {
-      method: "POST",
-      body: JSON.stringify({
-        template: this.state.rawTemplate,
-        values: this.state.rawValues,
-        chart: this.state.rawChart,
-        release: this.state.rawRelease,
-        capabilities: this.state.rawCapabilities,
-        helpers: this.state.rawHelpers,
-      }),
+    fetch(`${this.props.apiURL}/data`, {
+      method: "GET",
     })
       .then(handleResponse)
       .then(renderTemplate)
