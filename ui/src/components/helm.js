@@ -102,9 +102,9 @@ export default class HelmTemplatePreview extends React.Component<Props> {
 
     const renderTemplate = (res) => {
       res
-        .text()
+        .json()
         .then((data) =>
-          this.setState({ renderedTemplate: data, renderError: "" })
+          this.setState({ renderedTemplate: data.preview, renderError: "" })
         );
     };
 

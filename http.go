@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -26,11 +27,14 @@ func runHTTP(ctx context.Context, chart *chart.Chart, values map[string]any, rel
 			return fmt.Errorf("cannot render template using engine: %v", err)
 		}
 
+		data := apiData{
+			Preview: outputTemplate(renderedTemplate),
+		}
+
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 
-		_, err = w.Write([]byte(outputTemplate(renderedTemplate)))
-		return err
+		return json.NewEncoder(w).Encode(data)
 	}))
 
 	return http.ListenAndServe(":"+httpPort, mux)
