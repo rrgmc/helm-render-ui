@@ -1,0 +1,61 @@
+html,
+body,
+#root,
+.app {
+  height: 97.5%;
+  width: 100%;
+  margin: 0;
+  font-family: "Titillium Web";
+}
+
+.container {
+  display: flex;
+  flex-wrap: wrap;
+  min-height: 97%;
+  max-height: 97%;
+  margin-left: 24px;
+  margin-right: 24px;
+  flex-direction: row;
+}
+
+.input {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: calc(50% - 24px);
+  max-width: calc(50% - 24px);
+  margin: 8px;
+}
+
+.input .input__template {
+  flex: 2;
+}
+
+.input .input__values {
+  margin-top: 8px;
+  flex: 1;
+}
+
+.preview {
+  display: flex;
+  flex: 1;
+  min-width: calc(50% - 24px);
+  max-width: calc(50% - 24px);
+  margin: 8px;
+}
+
+.render-error {
+  min-width: calc(100% - 96px);
+  max-width: calc(100% - 96px);
+  margin-left: 32px;
+  margin-right: 32px;
+  padding: 8px;
+  background-color: #ffcccc;
+  border-radius: 7px;
+}
+
+.input__template,
+.input__values,
+.preview__highlighted {
+  overflow: auto;
+}

@@ -1,0 +1,26 @@
+.editor {
+  min-height: 100%;
+  counter-reset: line;
+}
+
+.editor textarea,
+.editor pre,
+.preview__highlighted pre {
+  outline: none;
+  padding-left: 36px !important;
+}
+
+.editor .editor__line__number,
+.preview__highlighted .editor__line__number {
+  position: absolute;
+  left: 0px;
+  color: #cccccc;
+  text-align: right;
+  width: 18px;
+  font-weight: 100;
+}
+
+.react-tabs__tab-panel--selected,
+.react-tabs {
+  height: calc(100% - 21px);
+}
