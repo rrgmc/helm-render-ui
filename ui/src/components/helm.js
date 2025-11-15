@@ -1,7 +1,7 @@
 import React from "react";
 import Editor from "react-simple-code-editor";
 import Preview from "./preview";
-import debounce from "lodash.debounce";
+//import debounce from "lodash.debounce";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import { highlight, languages } from "prismjs/components/prism-core";
 
