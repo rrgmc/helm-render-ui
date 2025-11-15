@@ -10,6 +10,7 @@ import (
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chartutil"
 	"helm.sh/helm/v3/pkg/engine"
+	"sigs.k8s.io/yaml"
 )
 
 const httpPort = "17821"
@@ -27,8 +28,32 @@ func runHTTP(ctx context.Context, chart *chart.Chart, values map[string]any, rel
 			return fmt.Errorf("cannot render template using engine: %v", err)
 		}
 
+		chartStr, err := yaml.Marshal(chart.Metadata)
+		if err != nil {
+			return err
+		}
+
+		releaseStr, err := yaml.Marshal(releaseOptions)
+		if err != nil {
+			return err
+		}
+
+		valuesStr, err := yaml.Marshal(values)
+		if err != nil {
+			return err
+		}
+
+		renderValuesStr, err := yaml.Marshal(valuesToRender)
+		if err != nil {
+			return err
+		}
+
 		data := apiData{
-			Preview: outputTemplate(renderedTemplate),
+			Chart:        string(chartStr),
+			Release:      string(releaseStr),
+			Values:       string(valuesStr),
+			RenderValues: string(renderValuesStr),
+			Preview:      outputTemplate(renderedTemplate),
 		}
 
 		w.Header().Set("Access-Control-Allow-Origin", "*")

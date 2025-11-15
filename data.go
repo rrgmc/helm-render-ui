@@ -1,5 +1,9 @@
 package main
 
 type apiData struct {
-	Preview string `json:"preview"`
+	Chart        string `json:"chart"`
+	Release      string `json:"release"`
+	Values       string `json:"values"`
+	RenderValues string `json:"renderValues"`
+	Preview      string `json:"preview"`
 }

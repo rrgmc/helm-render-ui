@@ -23,7 +23,7 @@ export default class HelmTemplatePreview extends React.Component<Props> {
     this.state = {
       rawTemplate: "",
       rawValues: "",
-      rawHelpers: "",
+      rawRenderValues: "",
       rawChart: defaults.rawChart,
       rawRelease: defaults.rawRelease,
       rawCapabilities: defaults.rawCapabilities,
@@ -35,62 +35,6 @@ export default class HelmTemplatePreview extends React.Component<Props> {
   componentDidMount() {
     this.updateHelmRender();
   }
-
-  updateRawTemplate(rawTemplate) {
-    this.setState(
-      {
-        rawTemplate: rawTemplate,
-      },
-      this.updateHelmRenderDebounce
-    );
-  }
-
-  updateRawValues(rawValues) {
-    this.setState(
-      {
-        rawValues: rawValues,
-      },
-      this.updateHelmRenderDebounce
-    );
-  }
-
-  updateRawChart(rawChart) {
-    this.setState(
-      {
-        rawChart: rawChart,
-      },
-      this.updateHelmRenderDebounce
-    );
-  }
-
-  updateRawRelease(rawRelease) {
-    this.setState(
-      {
-        rawRelease: rawRelease,
-      },
-      this.updateHelmRenderDebounce
-    );
-  }
-
-  updateRawCapabilities(rawCapabilities) {
-    this.setState(
-      {
-        rawCapabilities: rawCapabilities,
-      },
-      this.updateHelmRenderDebounce
-    );
-  }
-
-  updateRawHelpers(rawHelpers) {
-    this.setState(
-      {
-        rawHelpers: rawHelpers,
-      },
-      this.updateHelmRenderDebounce
-    );
-  }
-
-  updateHelmRenderDebounce = debounce(this.updateHelmRender, 300);
 
   updateHelmRender() {
     const handleResponse = (res) => {
@@ -104,7 +48,14 @@ export default class HelmTemplatePreview extends React.Component<Props> {
       res
         .json()
         .then((data) =>
-          this.setState({ renderedTemplate: data.preview, renderError: "" })
+          this.setState({
+              rawChart: data.chart,
+              rawRelease: data.release,
+              rawValues: data.values,
+              rawRenderValues: data.renderValues,
+              renderedTemplate: data.preview,
+              renderError: "",
+          })
         );
     };
 
@@ -147,42 +98,47 @@ export default class HelmTemplatePreview extends React.Component<Props> {
         <div className="navbar">
           <Logo title="Helm Template Preview" className="navbar__logo" />
           <h1 className="navbar__title">Helm Template Preview</h1>
-          <h3 className="navbar__about">
-            <a href="https://zainp.com">About</a>
-          </h3>
         </div>
         <div className="container">
           <div className="input">
             <div className="input__values">
               <Tabs>
                 <TabList>
-                  <Tab>Values</Tab>
                   <Tab>Chart</Tab>
+                  <Tab>Values</Tab>
+                  <Tab>Render Values</Tab>
                   <Tab>Release</Tab>
-                  <Tab>Capabilities</Tab>
-                  <Tab>_helpers.tpl</Tab>
                 </TabList>
+                  <TabPanel>
+                      <Editor
+                          value={this.state.rawChart}
+                          highlight={highlighter}
+                          padding={padding}
+                          style={style}
+                          placeholder="Insert the contents of your Chart.yaml file (e.g name)"
+                          className="input__chart__editor editor"
+                      />
+                  </TabPanel>
                 <TabPanel>
                   <Editor
                     value={this.state.rawValues}
                     highlight={highlighter}
                     padding={padding}
                     style={style}
-                    onValueChange={(code) => this.updateRawValues(code)}
                     placeholder="Insert the contents of your values files"
                     className="input__values__editor editor"
                   />
                 </TabPanel>
-                <TabPanel>
-                  <Editor
-                    value={this.state.rawChart}
-                    highlight={highlighter}
-                    padding={padding}
-                    style={style}
-                    onValueChange={(code) => this.updateRawChart(code)}
-                    placeholder="Insert the contents of your Chart.yaml file (e.g name)"
-                    className="input__chart__editor editor"
-                  />
+
+                  <TabPanel>
+                    <Editor
+                        value={this.state.rawRenderValues}
+                        highlight={highlighter}
+                        padding={padding}
+                        style={style}
+                        placeholder="Insert the contents of your values files"
+                        className="input__values__editor editor"
+                    />
                 </TabPanel>
                 <TabPanel>
                   <Editor
@@ -190,31 +146,8 @@ export default class HelmTemplatePreview extends React.Component<Props> {
                     highlight={highlighter}
                     padding={padding}
                     style={style}
-                    onValueChange={(code) => this.updateRawRelease(code)}
                     placeholder="Insert release values (e.g Name, Namespace, etc...)"
                     className="input__release__editor editor"
-                  />
-                </TabPanel>
-                <TabPanel>
-                  <Editor
-                    value={this.state.rawCapabilities}
-                    highlight={highlighter}
-                    padding={padding}
-                    style={style}
-                    onValueChange={(code) => this.updateRawCapabilities(code)}
-                    placeholder="Insert capabilities values (e.g HelmVersion, KubeVersion, etc...)"
-                    className="input__capabilities__editor editor"
-                  />
-                </TabPanel>
-                <TabPanel>
-                  <Editor
-                    value={this.state.rawHelpers}
-                    highlight={highlighter}
-                    padding={padding}
-                    style={style}
-                    onValueChange={(code) => this.updateRawHelpers(code)}
-                    placeholder="Insert _helpers.tpl file contents"
-                    className="input__helpers_tpl__editor editor"
                   />
                 </TabPanel>
               </Tabs>
@@ -242,27 +175,6 @@ export default class HelmTemplatePreview extends React.Component<Props> {
 }
 
 const defaults = {
-  rawChart: `apiVersion: v2
-name: chart-name
-version: 0.1.0`,
-  rawRelease: `Name: release-name
-Namespace: namespace
-IsUpgrade: false
-IsInstall: true
-Revision: 1
-Service: Helm`,
-  rawCapabilities: `APIVersions:
-  - networking.k8s.io/v1
-  - authentication.k8s.io/v1
-KubeVersion:
-  Version: "1.22"
-  Major: "1"
-  Minor: "22"
-  GitVersion: "1.22.0"
-HelmVersion:
-  Version: 3.6.3
-  GitCommit: d506314abfb5d21419df8c7e7e68012379db2354
-  GitTreeState: dirty
-  GoVersion: go1.17.0
-`,
+  rawChart: ``,
+  rawRelease: ``,
 };

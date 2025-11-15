@@ -34,10 +34,10 @@ func run(ctx context.Context) error {
 		},
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:        "namespace",
-				Aliases:     []string{"n"},
-				Usage:       "namespace",
-				DefaultText: "default",
+				Name:    "namespace",
+				Aliases: []string{"n"},
+				Usage:   "namespace",
+				Value:   "default",
 			},
 			&cli.StringFlag{
 				Name:    "release",
