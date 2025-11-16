@@ -10,6 +10,14 @@ tasks:
   test:
     cmds:
       - 'go test ./...'
+  dev-ui:
+    dir: './ui'
+    cmds:
+      - 'npm start'
+  init-ui:
+    dir: './ui'
+    cmds:
+      - 'npm update'
   build-ui:
     dir: './ui'
     cmds:

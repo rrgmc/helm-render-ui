@@ -1,9 +1,12 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"log/slog"
+	"net"
 	"net/http"
 	"strings"
 
@@ -13,9 +16,9 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
-const httpPort = "17821"
+const devHTTPPort = 17821
 
-func runHTTP(chart *chart.Chart, valueFiles []string, values map[string]any, releaseOptions chartutil.ReleaseOptions) error {
+func runHTTP(ctx context.Context, httpPort int, chart *chart.Chart, valueFiles []string, values map[string]any, releaseOptions chartutil.ReleaseOptions) error {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/data", httpHandlerWithError(func(w http.ResponseWriter, r *http.Request) error {
 		fnprefix := fmt.Sprintf("%s/templates/", chart.Name())
@@ -83,7 +86,23 @@ func runHTTP(chart *chart.Chart, valueFiles []string, values map[string]any, rel
 		return err
 	}
 
-	return http.ListenAndServe(":"+httpPort, mux)
+	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", httpPort))
+	if err != nil {
+		log.Fatalf("Failed to create listener: %v", err)
+	}
+	defer listener.Close() // Ensure the listener is closed when main exits
+
+	serverHTTPPort := listener.Addr().(*net.TCPAddr).Port
+
+	browserURL := fmt.Sprintf("http://127.0.0.1:%d", serverHTTPPort)
+	if httpPort == 0 {
+		slog.InfoContext(ctx, "opening browser URL", "url", browserURL)
+		_ = openURL(browserURL)
+	} else {
+		slog.InfoContext(ctx, "browser URL", "url", browserURL)
+	}
+
+	return http.Serve(listener, mux)
 }
 
 func httpHandlerWithError(f func(http.ResponseWriter, *http.Request) error) http.HandlerFunc {

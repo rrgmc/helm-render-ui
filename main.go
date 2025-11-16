@@ -49,6 +49,16 @@ func run(ctx context.Context) error {
 				Aliases: []string{"f"},
 				Usage:   "extra configuration values file name",
 			},
+			&cli.IntFlag{
+				Name:    "http-port",
+				Aliases: []string{"p"},
+				Usage:   "http port",
+			},
+			&cli.BoolFlag{
+				Name:   "dev-port",
+				Usage:  "dev http port",
+				Hidden: true,
+			},
 		},
 		Action: func(ctx context.Context, command *cli.Command) error {
 			chartFolder := command.StringArgs("helm-chart-folder")[0]
@@ -97,11 +107,12 @@ func run(ctx context.Context) error {
 				options.Name = chart.Metadata.Name
 			}
 
-			browserURL := "http://127.0.0.1:" + httpPort
-			slog.InfoContext(ctx, "opening browser URL", "url", browserURL)
-			// _ = openURL(browserURL)
+			httpPort := command.Int("http-port")
+			if command.Bool("dev-port") {
+				httpPort = devHTTPPort
+			}
 
-			return runHTTP(chart, displayValueFiles, values, options)
+			return runHTTP(ctx, httpPort, chart, displayValueFiles, values, options)
 		},
 	}
 
