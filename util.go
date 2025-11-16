@@ -50,27 +50,30 @@ func mapSortedByKey[Map ~map[K]V, K cmp.Ordered, V any](m Map) iter.Seq2[K, V] {
 	}
 }
 
-func chartFilesIter(ch *chart.Chart) iter.Seq[string] {
-	return func(yield func(string) bool) {
-		for _, tmpl := range ch.Templates {
-			if !yield(path.Join(ch.ChartFullPath(), tmpl.Name)) {
-				return
-			}
-		}
-		for _, dep := range ch.Dependencies() {
-			for ct := range chartFilesIter(dep) {
-				if !yield(ct) {
-					return
-				}
-			}
-		}
-	}
+type chartIterData struct {
+	FullPath string
+	Path     []string
+	Filename string
 }
 
-func chartFilesIterItem(ch *chart.Chart) iter.Seq[string] {
-	return func(yield func(string) bool) {
+func chartFilesIter(ch *chart.Chart) iter.Seq[chartIterData] {
+	return func(yield func(chartIterData) bool) {
 		for _, tmpl := range ch.Templates {
-			if !yield(path.Join(ch.ChartFullPath(), tmpl.Name)) {
+			cid := chartIterData{
+				FullPath: path.Join(ch.ChartFullPath(), tmpl.Name),
+				Filename: strings.TrimPrefix(tmpl.Name, "templates/"),
+			}
+			cp := ch
+			for cp != nil {
+				if cp.Parent() == nil {
+					break
+				}
+				cid.Path = append(cid.Path, cp.Name())
+				cp = cp.Parent()
+			}
+			slices.Reverse(cid.Path)
+
+			if !yield(cid) {
 				return
 			}
 		}

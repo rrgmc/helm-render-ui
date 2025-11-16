@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
+	"path"
 	"strings"
 
 	"helm.sh/helm/v3/pkg/chart"
@@ -66,15 +67,24 @@ func runHTTP(ctx context.Context, httpPort int, chart *chart.Chart, valueFiles [
 		}
 
 		for cf := range chartFilesIter(chart) {
-			fmt.Println(cf)
-		}
+			fv, ok := renderedTemplate[cf.FullPath]
+			if !ok {
+				// slog.Warn("cannot find rendered template", "template", cf.FullPath)
+				continue
+			}
 
-		for fn, fv := range mapSortedByKey(renderedTemplate) {
 			if strings.TrimSpace(fv) == "" {
 				continue
 			}
+
+			fileDesc := path.Join(cf.Path...)
+			if len(cf.Path) > 0 {
+				fileDesc += "/"
+			}
+			fileDesc += cf.Filename
+
 			data.PreviewFiles = append(data.PreviewFiles, apiDataFile{
-				Filename: formatHelmFilename(chart, fn),
+				Filename: fileDesc,
 				Preview:  fv,
 			})
 		}
