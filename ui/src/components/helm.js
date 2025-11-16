@@ -103,8 +103,8 @@ export default class HelmTemplatePreview extends React.Component<Props> {
                 <TabList>
                   <Tab>Chart</Tab>
                   <Tab>Values</Tab>
-                  <Tab>Render Values</Tab>
                   <Tab>Release</Tab>
+                  <Tab>Render Values</Tab>
                 </TabList>
                   <TabPanel>
                       <Editor
@@ -126,17 +126,6 @@ export default class HelmTemplatePreview extends React.Component<Props> {
                     className="input__values__editor editor"
                   />
                 </TabPanel>
-
-                  <TabPanel>
-                    <Editor
-                        value={this.state.rawRenderValues}
-                        highlight={highlighter}
-                        padding={padding}
-                        style={style}
-                        placeholder="Insert the contents of your values files"
-                        className="input__values__editor editor"
-                    />
-                </TabPanel>
                 <TabPanel>
                   <Editor
                     value={this.state.rawRelease}
@@ -147,6 +136,16 @@ export default class HelmTemplatePreview extends React.Component<Props> {
                     className="input__release__editor editor"
                   />
                 </TabPanel>
+                  <TabPanel>
+                      <Editor
+                          value={this.state.rawRenderValues}
+                          highlight={highlighter}
+                          padding={padding}
+                          style={style}
+                          placeholder="Insert the contents of your values files"
+                          className="input__values__editor editor"
+                      />
+                  </TabPanel>
               </Tabs>
             </div>
           </div>
