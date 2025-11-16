@@ -14,3 +14,5 @@ go install github.com/rrgmc/helm-render-ui@latest
 ## Author
 
 Rangel Reale (rangelreale@gmail.com)
+
+Layout was based on [https://github.com/mzjp2/helm-template-preview](https://github.com/mzjp2/helm-template-preview).
