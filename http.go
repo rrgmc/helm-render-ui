@@ -21,98 +21,100 @@ const devHTTPPort = 17821
 
 func runHTTP(ctx context.Context, httpPort int, chart *chart.Chart, valueFiles []string, values map[string]any,
 	releaseOptions chartutil.ReleaseOptions, chartVersions []string) error {
+	fnprefix := fmt.Sprintf("%s/templates/", chart.Name())
+
+	valuesToRender, err := chartutil.ToRenderValues(chart, values, releaseOptions, nil)
+	if err != nil {
+		return err
+	}
+
+	renderedTemplate, err := engine.Render(chart, valuesToRender)
+	if err != nil {
+		return fmt.Errorf("cannot render template using engine: %v", err)
+	}
+
+	chartStr, err := yaml.Marshal(chart.Metadata)
+	if err != nil {
+		return err
+	}
+
+	chartStrValue := string(chartStr)
+
+	if len(valueFiles) > 0 {
+		chartStrValue += "\n---\nvalue_files:\n"
+		for _, file := range valueFiles {
+			chartStrValue += fmt.Sprintf("- %s\n", strings.TrimPrefix(file, fnprefix))
+		}
+	}
+
+	if len(chartVersions) > 0 {
+		chartStrValue += "\n---\nchart_versions:\n"
+		for _, file := range chartVersions {
+			chartStrValue += fmt.Sprintf("- %s\n", strings.TrimPrefix(file, fnprefix))
+		}
+	}
+
+	releaseStr, err := yaml.Marshal(releaseOptions)
+	if err != nil {
+		return err
+	}
+
+	valuesStr, err := yaml.Marshal(values)
+	if err != nil {
+		return err
+	}
+
+	fullValuesStr, err := yaml.Marshal(valuesToRender["Values"])
+	if err != nil {
+		return err
+	}
+
+	renderValuesStr, err := yaml.Marshal(valuesToRender)
+	if err != nil {
+		return err
+	}
+
+	data := apiData{
+		Chart:        chartStrValue,
+		Release:      string(releaseStr),
+		Values:       string(valuesStr),
+		FullValues:   string(fullValuesStr),
+		RenderValues: string(renderValuesStr),
+	}
+
+	for cf := range chartFilesIter(chart) {
+		fv, ok := renderedTemplate[cf.FullPath]
+		if !ok {
+			// slog.Warn("cannot find rendered template", "template", cf.FullPath)
+			continue
+		}
+
+		if strings.TrimSpace(fv) == "" {
+			continue
+		}
+
+		fileDesc := path.Join(cf.Path...)
+		if len(cf.Path) > 0 {
+			fileDesc += "/"
+		}
+		fileDesc += cf.Filename
+
+		data.PreviewFiles = append(data.PreviewFiles, apiDataFile{
+			Filename: fileDesc,
+			Preview:  fv,
+		})
+	}
+
 	mux := http.NewServeMux()
+
 	mux.HandleFunc("/data", httpHandlerWithError(func(w http.ResponseWriter, r *http.Request) error {
-		fnprefix := fmt.Sprintf("%s/templates/", chart.Name())
-
-		valuesToRender, err := chartutil.ToRenderValues(chart, values, releaseOptions, nil)
-		if err != nil {
-			return err
-		}
-
-		renderedTemplate, err := engine.Render(chart, valuesToRender)
-		if err != nil {
-			return fmt.Errorf("cannot render template using engine: %v", err)
-		}
-
-		chartStr, err := yaml.Marshal(chart.Metadata)
-		if err != nil {
-			return err
-		}
-
-		chartStrValue := string(chartStr)
-
-		if len(valueFiles) > 0 {
-			chartStrValue += "\n---\nvalue_files:\n"
-			for _, file := range valueFiles {
-				chartStrValue += fmt.Sprintf("- %s\n", strings.TrimPrefix(file, fnprefix))
-			}
-		}
-
-		if len(chartVersions) > 0 {
-			chartStrValue += "\n---\nchart_versions:\n"
-			for _, file := range chartVersions {
-				chartStrValue += fmt.Sprintf("- %s\n", strings.TrimPrefix(file, fnprefix))
-			}
-		}
-
-		releaseStr, err := yaml.Marshal(releaseOptions)
-		if err != nil {
-			return err
-		}
-
-		valuesStr, err := yaml.Marshal(values)
-		if err != nil {
-			return err
-		}
-
-		fullValuesStr, err := yaml.Marshal(valuesToRender["Values"])
-		if err != nil {
-			return err
-		}
-
-		renderValuesStr, err := yaml.Marshal(valuesToRender)
-		if err != nil {
-			return err
-		}
-
-		data := apiData{
-			Chart:        chartStrValue,
-			Release:      string(releaseStr),
-			Values:       string(valuesStr),
-			FullValues:   string(fullValuesStr),
-			RenderValues: string(renderValuesStr),
-		}
-
-		for cf := range chartFilesIter(chart) {
-			fv, ok := renderedTemplate[cf.FullPath]
-			if !ok {
-				// slog.Warn("cannot find rendered template", "template", cf.FullPath)
-				continue
-			}
-
-			if strings.TrimSpace(fv) == "" {
-				continue
-			}
-
-			fileDesc := path.Join(cf.Path...)
-			if len(cf.Path) > 0 {
-				fileDesc += "/"
-			}
-			fileDesc += cf.Filename
-
-			data.PreviewFiles = append(data.PreviewFiles, apiDataFile{
-				Filename: fileDesc,
-				Preview:  fv,
-			})
-		}
-
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 
 		return json.NewEncoder(w).Encode(data)
 	}))
-	err := uiHandler(mux)
+
+	err = uiHandler(mux)
 	if err != nil {
 		return err
 	}
