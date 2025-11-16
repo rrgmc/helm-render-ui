@@ -1,6 +1,6 @@
 {
   "short_name": "Helm Preview",
-  "name": "Helm Template Preview",
+  "name": "Helm Render UI",
   "icons": [
     {
       "src": "favicon.ico",

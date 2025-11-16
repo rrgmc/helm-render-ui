@@ -11,8 +11,6 @@ import "prismjs/themes/prism.css";
 import "prismjs/components/prism-clike";
 import "prismjs/components/prism-yaml";
 
-import { ReactComponent as Logo } from "../static/goggles.svg";
-
 type Props = {
   apiURL: string,
 };
@@ -96,8 +94,7 @@ export default class HelmTemplatePreview extends React.Component<Props> {
     return (
       <div className="app">
         <div className="navbar">
-          <Logo title="Helm Template Preview" className="navbar__logo" />
-          <h1 className="navbar__title">Helm Template Preview</h1>
+          <h1 className="navbar__title">Helm Render UI</h1>
         </div>
         <div className="container">
           <div className="input">
