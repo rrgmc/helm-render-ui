@@ -1,6 +1,6 @@
 # helm-render-ui
 
-`helm-render-ui` is a command-line tool to preview rendered Helm templates.
+`helm-render-ui` is a command-line tool to preview rendered Helm templates in a local webview.
 
 Features:
 * load from a local chart path, or a remote Helm repository URL.
