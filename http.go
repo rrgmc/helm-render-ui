@@ -54,6 +54,11 @@ func runHTTP(ctx context.Context, httpPort int, chart *chart.Chart, valueFiles [
 			return err
 		}
 
+		fullValuesStr, err := yaml.Marshal(valuesToRender["Values"])
+		if err != nil {
+			return err
+		}
+
 		renderValuesStr, err := yaml.Marshal(valuesToRender)
 		if err != nil {
 			return err
@@ -63,6 +68,7 @@ func runHTTP(ctx context.Context, httpPort int, chart *chart.Chart, valueFiles [
 			Chart:        chartStrValue,
 			Release:      string(releaseStr),
 			Values:       string(valuesStr),
+			FullValues:   string(fullValuesStr),
 			RenderValues: string(renderValuesStr),
 		}
 
