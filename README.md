@@ -23,6 +23,10 @@ go install github.com/rrgmc/helm-render-ui@latest
 $ helm-render-ui --repo https://helm.datadoghq.com datadog-operator -n monitoring -f environments/dev.yaml
 ```
 
+```shell
+$ helm-render-ui /helm/charts/datadog-operator -n monitoring -f environments/dev.yaml
+```
+
 ![Screenshot](images/screenshot_datadog.png)
 
 ## Author
