@@ -6,6 +6,7 @@ import (
 	"iter"
 	"maps"
 	"os/exec"
+	"path"
 	"runtime"
 	"slices"
 	"strings"
@@ -44,6 +45,40 @@ func mapSortedByKey[Map ~map[K]V, K cmp.Ordered, V any](m Map) iter.Seq2[K, V] {
 		for _, k := range slices.Sorted(maps.Keys(m)) {
 			if !yield(k, m[k]) {
 				return
+			}
+		}
+	}
+}
+
+func chartFilesIter(ch *chart.Chart) iter.Seq[string] {
+	return func(yield func(string) bool) {
+		for _, tmpl := range ch.Templates {
+			if !yield(path.Join(ch.ChartFullPath(), tmpl.Name)) {
+				return
+			}
+		}
+		for _, dep := range ch.Dependencies() {
+			for ct := range chartFilesIter(dep) {
+				if !yield(ct) {
+					return
+				}
+			}
+		}
+	}
+}
+
+func chartFilesIterItem(ch *chart.Chart) iter.Seq[string] {
+	return func(yield func(string) bool) {
+		for _, tmpl := range ch.Templates {
+			if !yield(path.Join(ch.ChartFullPath(), tmpl.Name)) {
+				return
+			}
+		}
+		for _, dep := range ch.Dependencies() {
+			for ct := range chartFilesIter(dep) {
+				if !yield(ct) {
+					return
+				}
 			}
 		}
 	}

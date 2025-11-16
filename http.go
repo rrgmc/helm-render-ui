@@ -63,7 +63,10 @@ func runHTTP(ctx context.Context, httpPort int, chart *chart.Chart, valueFiles [
 			Release:      string(releaseStr),
 			Values:       string(valuesStr),
 			RenderValues: string(renderValuesStr),
-			// Preview:      outputTemplate(renderedTemplate),
+		}
+
+		for cf := range chartFilesIter(chart) {
+			fmt.Println(cf)
 		}
 
 		for fn, fv := range mapSortedByKey(renderedTemplate) {
