@@ -39,9 +39,13 @@ func runHTTP(ctx context.Context, httpPort int, chart *chart.Chart, valueFiles [
 			return err
 		}
 
-		chartStrValue := string(chartStr) + "\n---\nvalue_files:\n"
-		for _, file := range valueFiles {
-			chartStrValue += fmt.Sprintf("- %s\n", strings.TrimPrefix(file, fnprefix))
+		chartStrValue := string(chartStr)
+
+		if len(valueFiles) > 0 {
+			chartStrValue += "\n---\nvalue_files:\n"
+			for _, file := range valueFiles {
+				chartStrValue += fmt.Sprintf("- %s\n", strings.TrimPrefix(file, fnprefix))
+			}
 		}
 
 		releaseStr, err := yaml.Marshal(releaseOptions)

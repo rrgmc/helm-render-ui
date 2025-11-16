@@ -7,7 +7,9 @@ import (
 	"os"
 	"strings"
 
+	"github.com/rrgmc/helm-render-ui/helm"
 	"github.com/urfave/cli/v3"
+	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
 	"helm.sh/helm/v3/pkg/chartutil"
 	"sigs.k8s.io/yaml"
@@ -33,6 +35,14 @@ func run(ctx context.Context) error {
 			},
 		},
 		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:  "repo",
+				Usage: "helm repository URL. If set, the folder name parameter will be used as the chart name",
+			},
+			&cli.StringFlag{
+				Name:  "chart-version",
+				Usage: "chart version (if downloading from repository)",
+			},
 			&cli.StringFlag{
 				Name:    "namespace",
 				Aliases: []string{"n"},
@@ -61,13 +71,41 @@ func run(ctx context.Context) error {
 			},
 		},
 		Action: func(ctx context.Context, command *cli.Command) error {
+			chartRepo := command.String("repo")
 			chartFolder := command.StringArgs("helm-chart-folder")[0]
 
 			if strings.TrimSpace(chartFolder) == "" {
 				return fmt.Errorf("helm chart folder is required")
 			}
+			var err error
 
-			chart, err := loader.LoadDir(chartFolder)
+			var cht *chart.Chart
+			if chartRepo != "" {
+				slog.InfoContext(ctx, "loading chart from repository",
+					"repo", chartRepo,
+					"chart", chartFolder,
+					"version", command.String("chart-version"))
+
+				repository, err := helm.LoadRepository(chartRepo)
+				if err != nil {
+					return err
+				}
+
+				latestChart, err := repository.GetChart(chartFolder, command.String("chart-version"))
+				if err != nil {
+					return err
+				}
+
+				latestChartFiles, err := latestChart.Download()
+				if err != nil {
+					return err
+				}
+				defer latestChartFiles.Close()
+
+				chartFolder = latestChartFiles.ChartPath()
+			}
+
+			cht, err = loader.LoadDir(chartFolder)
 			if err != nil {
 				return fmt.Errorf("error loading chart from folder: %w", err)
 			}
@@ -92,7 +130,7 @@ func run(ctx context.Context) error {
 				values = mergeMaps(values, currentMap)
 			}
 
-			if err := chartutil.ProcessDependencies(chart, values); err != nil {
+			if err := chartutil.ProcessDependencies(cht, values); err != nil {
 				return err
 			}
 
@@ -104,7 +142,7 @@ func run(ctx context.Context) error {
 				IsUpgrade: false,
 			}
 			if options.Name == "" {
-				options.Name = chart.Metadata.Name
+				options.Name = cht.Metadata.Name
 			}
 
 			httpPort := command.Int("http-port")
@@ -112,7 +150,7 @@ func run(ctx context.Context) error {
 				httpPort = devHTTPPort
 			}
 
-			return runHTTP(ctx, httpPort, chart, displayValueFiles, values, options)
+			return runHTTP(ctx, httpPort, cht, displayValueFiles, values, options)
 		},
 	}
 
