@@ -13,8 +13,8 @@ tasks:
   build-ui:
     dir: './ui'
     cmds:
-      - 'npm start build'
-      - 'npm start zip'
+      - 'npm run build'
+      - 'npm run zip'
   current-version:
     cmds:
       - 'echo "Version: {{.GIT_TAG_CURRENT}}"'
