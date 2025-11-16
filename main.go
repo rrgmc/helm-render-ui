@@ -56,7 +56,7 @@ func run(ctx context.Context) error {
 				Usage:   "release name",
 			},
 			&cli.StringSliceFlag{
-				Name:    "value-file",
+				Name:    "values",
 				Aliases: []string{"f"},
 				Usage:   "extra configuration values file name",
 			},
@@ -64,6 +64,11 @@ func run(ctx context.Context) error {
 				Name:    "http-port",
 				Aliases: []string{"p"},
 				Usage:   "http port",
+			},
+			&cli.BoolFlag{
+				Name:  "is-upgrade",
+				Usage: "sets upgrade mode",
+				Value: false,
 			},
 			&cli.BoolFlag{
 				Name:   "dev-port",
@@ -153,8 +158,8 @@ func run(ctx context.Context) error {
 				Name:      command.String("release"),
 				Namespace: command.String("namespace"),
 				Revision:  1,
-				IsInstall: true,
-				IsUpgrade: false,
+				IsInstall: !command.Bool("is-upgrade"),
+				IsUpgrade: command.Bool("is-upgrade"),
 			}
 			if options.Name == "" {
 				options.Name = cht.Metadata.Name
