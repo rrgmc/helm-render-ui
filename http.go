@@ -19,7 +19,8 @@ import (
 
 const devHTTPPort = 17821
 
-func runHTTP(ctx context.Context, httpPort int, chart *chart.Chart, valueFiles []string, values map[string]any, releaseOptions chartutil.ReleaseOptions) error {
+func runHTTP(ctx context.Context, httpPort int, chart *chart.Chart, valueFiles []string, values map[string]any,
+	releaseOptions chartutil.ReleaseOptions, chartVersions []string) error {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/data", httpHandlerWithError(func(w http.ResponseWriter, r *http.Request) error {
 		fnprefix := fmt.Sprintf("%s/templates/", chart.Name())
@@ -44,6 +45,13 @@ func runHTTP(ctx context.Context, httpPort int, chart *chart.Chart, valueFiles [
 		if len(valueFiles) > 0 {
 			chartStrValue += "\n---\nvalue_files:\n"
 			for _, file := range valueFiles {
+				chartStrValue += fmt.Sprintf("- %s\n", strings.TrimPrefix(file, fnprefix))
+			}
+		}
+
+		if len(chartVersions) > 0 {
+			chartStrValue += "\n---\nchart_versions:\n"
+			for _, file := range chartVersions {
 				chartStrValue += fmt.Sprintf("- %s\n", strings.TrimPrefix(file, fnprefix))
 			}
 		}

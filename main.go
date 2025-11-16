@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/rrgmc/helm-render-ui/helm"
 	"github.com/urfave/cli/v3"
@@ -80,7 +81,9 @@ func run(ctx context.Context) error {
 			var err error
 
 			var cht *chart.Chart
+			var chartVersions []string
 			if chartRepo != "" {
+				chartName := chartFolder
 				slog.InfoContext(ctx, "loading chart from repository",
 					"repo", chartRepo,
 					"chart", chartFolder,
@@ -103,6 +106,18 @@ func run(ctx context.Context) error {
 				defer latestChartFiles.Close()
 
 				chartFolder = latestChartFiles.ChartPath()
+
+				for entry, err := range repository.ChartVersions(chartName, 20) {
+					if err != nil {
+						slog.Warn("error listing chart versions", "error", err)
+						break
+					}
+					var date string
+					if !entry.Created.IsZero() {
+						date = fmt.Sprintf(" [%s]", entry.Created.Format(time.RFC3339))
+					}
+					chartVersions = append(chartVersions, fmt.Sprintf("%s%s", entry.Version, date))
+				}
 			}
 
 			cht, err = loader.LoadDir(chartFolder)
@@ -150,7 +165,7 @@ func run(ctx context.Context) error {
 				httpPort = devHTTPPort
 			}
 
-			return runHTTP(ctx, httpPort, cht, displayValueFiles, values, options)
+			return runHTTP(ctx, httpPort, cht, displayValueFiles, values, options, chartVersions)
 		},
 	}
 
