@@ -133,7 +133,7 @@ func run(ctx context.Context) error {
 			var displayValueFiles []string
 
 			values := map[string]any{}
-			for _, valueFile := range command.StringSlice("value-file") {
+			for _, valueFile := range command.StringSlice("values") {
 				currentMap := map[string]interface{}{}
 
 				displayValueFiles = append(displayValueFiles, ensureRelativePath(strings.TrimPrefix(valueFile, chartFolder)))
