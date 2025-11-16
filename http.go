@@ -71,7 +71,7 @@ func runHTTP(ctx context.Context, httpPort int, chart *chart.Chart, valueFiles [
 				continue
 			}
 			data.PreviewFiles = append(data.PreviewFiles, apiDataFile{
-				Filename: strings.TrimPrefix(fn, fnprefix),
+				Filename: formatHelmFilename(chart, fn),
 				Preview:  fv,
 			})
 		}

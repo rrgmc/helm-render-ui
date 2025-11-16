@@ -9,10 +9,18 @@ import (
 	"runtime"
 	"slices"
 	"strings"
+
+	"helm.sh/helm/v3/pkg/chart"
 )
 
 func ensureRelativePath(path string) string {
 	return strings.TrimLeft(path, "/")
+}
+
+func formatHelmFilename(ch *chart.Chart, name string) string {
+	name = strings.TrimPrefix(name, ch.Name())
+	name = strings.TrimPrefix(name, "/templates")
+	return ensureRelativePath(name)
 }
 
 func outputTemplate(renderedTemplate map[string]string) string {
