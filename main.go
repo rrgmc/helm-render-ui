@@ -22,7 +22,7 @@ func main() {
 
 func run(ctx context.Context) error {
 	cmd := &cli.Command{
-		Name:      "helm-template-preview",
+		Name:      "helm-render-ui",
 		ArgsUsage: "[helm chart folder]",
 		Arguments: []cli.Argument{
 			&cli.StringArgs{

@@ -1,4 +1,4 @@
-module github.com/rrgmc/helm-template-preview
+module github.com/rrgmc/helm-render-ui
 
 go 1.25.3
 

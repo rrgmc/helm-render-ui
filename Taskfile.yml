@@ -6,10 +6,15 @@ tasks:
       - 'go doc -http'
   install:
     cmds:
-      - 'go install github.com/rrgmc/helm-template-preview'
+      - 'go install github.com/rrgmc/helm-render-ui'
   test:
     cmds:
       - 'go test ./...'
+  build-ui:
+    dir: './ui'
+    cmds:
+      - 'npm start build'
+      - 'npm start zip'
   current-version:
     cmds:
       - 'echo "Version: {{.GIT_TAG_CURRENT}}"'
