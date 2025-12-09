@@ -147,7 +147,8 @@ func run(ctx context.Context) error {
 					return fmt.Errorf("failed to parse %s: %w", valueFile, err)
 				}
 				// Merge with the previous map
-				values = mergeMaps(values, currentMap)
+				// values = mergeMaps(values, currentMap)
+				chartutil.CoalesceTables(values, currentMap)
 			}
 
 			if err := chartutil.ProcessDependencies(cht, values); err != nil {
